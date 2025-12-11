@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-black via-gray-900 to-black text-white min-h-screen;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply bg-white/5 backdrop-blur-2xl border border-white/10;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .glass-effect-light {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20;
+    box-shadow: 0 4px 16px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent;
+  }
+
+  .btn-primary {
+    @apply bg-white/90 hover:bg-white text-black font-semibold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl backdrop-blur-sm;
+  }
+
+  .btn-secondary {
+    @apply glass-effect hover:bg-white/10 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105;
+  }
+
+  .card {
+    @apply glass-effect rounded-3xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-white/10;
+  }
+
+  .input-field {
+    @apply glass-effect w-full px-4 py-3 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30 transition-all duration-300;
+  }
+}
+
+/* 自定义滚动条 - Apple风格 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 选中文本样式 */
+::selection {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* 3D透视效果 */
+.perspective-1000 {
+  perspective: 1000px;
+}
