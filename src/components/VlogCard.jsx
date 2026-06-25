@@ -115,6 +115,8 @@ const VlogCard = ({ vlog, onPrivacyChange }) => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <option value="public">🌍 公开</option>
+                <option value="friends">👥 好友</option>
+                <option value="followers">👁 关注</option>
                 <option value="private">🔒 私密</option>
               </select>
             )}

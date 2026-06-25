@@ -10,7 +10,14 @@ import Visitors from './pages/Visitors';
 import VlogDetail from './pages/VlogDetail';
 import Albums from './pages/Albums';
 import Discover from './pages/Discover';
+import Admin from './pages/Admin';
+import Shares from './pages/Shares';
+import Search from './pages/Search';
+import Feed from './pages/Feed';
+import TagPage from './pages/TagPage';
 import MusicPlayer from './components/MusicPlayer';
+import MobileNav from './components/MobileNav';
+import useMobile from './hooks/useMobile';
 
 // 受保护路由组件
 const ProtectedRoute = ({ children }) => {
@@ -40,74 +47,35 @@ const ConditionalMusicPlayer = () => {
 
 // 路由配置
 const AppRoutes = () => {
+    const isMobile = useMobile();
+    const location = useLocation();
+    const isLogin = location.pathname === '/login';
+
     return (
-        <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route
-                path="/"
-                element={
-                    <ProtectedRoute>
-                        <Home />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/profile/:userId"
-                element={
-                    <ProtectedRoute>
-                        <Profile />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/friends"
-                element={
-                    <ProtectedRoute>
-                        <Friends />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/messages"
-                element={
-                    <ProtectedRoute>
-                        <Messages />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/visitors"
-                element={
-                    <ProtectedRoute>
-                        <Visitors />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/vlog/:id"
-                element={
-                    <ProtectedRoute>
-                        <VlogDetail />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/albums/:userId"
-                element={
-                    <ProtectedRoute>
-                        <Albums />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/discover"
-                element={
-                    <ProtectedRoute>
-                        <Discover />
-                    </ProtectedRoute>
-                }
-            />
-        </Routes>
+        <div className="app-container">
+            <div className={`app-content ${isMobile && !isLogin ? 'pb-16' : ''}`}>
+                <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                    <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+                    <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                    <Route path="/visitors" element={<ProtectedRoute><Visitors /></ProtectedRoute>} />
+                    <Route path="/vlog/:id" element={<ProtectedRoute><VlogDetail /></ProtectedRoute>} />
+                    <Route path="/albums/:userId" element={<ProtectedRoute><Albums /></ProtectedRoute>} />
+                    <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/shares" element={<ProtectedRoute><Shares /></ProtectedRoute>} />
+                    <Route path="/shares/create" element={<ProtectedRoute><Shares /></ProtectedRoute>} />
+                    <Route path="/shares/:id" element={<ProtectedRoute><Shares /></ProtectedRoute>} />
+                    <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+                    <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+                    <Route path="/tags/:tag" element={<ProtectedRoute><TagPage /></ProtectedRoute>} />
+                </Routes>
+            </div>
+            {isMobile && !isLogin && <MobileNav />}
+            {!isMobile && <ConditionalMusicPlayer />}
+        </div>
     );
 };
 

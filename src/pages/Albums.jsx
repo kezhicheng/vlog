@@ -19,7 +19,7 @@ const Albums = () => {
   });
   const [imagePreviews, setImagePreviews] = useState([]);
 
-  const isOwnAlbum = currentUser?.id === userId;
+  const isOwnAlbum = String(currentUser?.id) === String(userId);
 
   useEffect(() => {
     fetchAlbums();
@@ -71,9 +71,7 @@ const Albums = () => {
         formData.append('images', image);
       });
 
-      await axios.post('/api/albums', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await axios.post('/api/albums', formData);
 
       setShowCreateModal(false);
       setNewAlbum({ title: '', description: '', images: [] });
@@ -88,9 +86,7 @@ const Albums = () => {
     if (!confirm('确定要删除这个相册吗？')) return;
 
     try {
-      await axios.delete(`/api/albums/${albumId}`, {
-        data: { userId: currentUser.id }
-      });
+      await axios.delete(`/api/albums/${albumId}`);
       fetchAlbums();
     } catch (error) {
       alert('删除失败');

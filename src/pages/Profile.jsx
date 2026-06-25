@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
@@ -8,15 +8,18 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Profile = () => {
   const { userId } = useParams();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [profileUser, setProfileUser] = useState(null);
   const [vlogs, setVlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFriend, setIsFriend] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(true);
+  const [musicUrl, setMusicUrl] = useState('');
+  const musicInputRef = useRef(null);
 
-  const isOwnProfile = currentUser?.id === userId;
+  const isOwnProfile = String(currentUser?.id) === String(userId);
 
   useEffect(() => {
     if (userId) {
@@ -35,6 +38,8 @@ const Profile = () => {
     try {
       const response = await axios.get(`/api/users/${userId}`);
       setProfileUser(response.data);
+      setMusicEnabled(response.data.musicEnabled !== 0);
+      setMusicUrl(response.data.musicUrl || '');
     } catch (error) {
       console.error('获取用户信息失败:', error);
     }
@@ -128,28 +133,61 @@ const Profile = () => {
                   <span className="text-sm text-gray-400">IP属地：{profileUser.location}</span>
                 </div>
               )}
-              <div className="flex items-center gap-6 justify-center md:justify-start text-sm">
-                <Link to={`/profile/${userId}`} className="hover:opacity-80 transition-opacity">
+              <div className="flex items-center gap-4 md:gap-6 justify-center md:justify-start text-sm flex-wrap">
+                <a href="#vlogs-section" onClick={(e) => { e.preventDefault(); document.getElementById('vlogs-section')?.scrollIntoView({ behavior: 'smooth' }); }}
+                  className="hover:opacity-80 transition-opacity cursor-pointer">
                   <span className="font-bold text-2xl gradient-text">{vlogs.length}</span>
                   <p className="text-gray-400">Vlogs</p>
-                </Link>
+                </a>
                 <Link to={`/albums/${userId}`} className="hover:opacity-80 transition-opacity">
                   <span className="font-bold text-2xl gradient-text">📷</span>
                   <p className="text-gray-400">相册</p>
                 </Link>
+                {isOwnProfile && (
+                  <>
+                    <Link to="/visitors" className="hover:opacity-80 transition-opacity">
+                      <span className="font-bold text-2xl gradient-text">👥</span>
+                      <p className="text-gray-400">访客</p>
+                    </Link>
+                    <button onClick={() => { if (confirm('确定退出登录？')) { logout(); navigate('/login'); } }}
+                      className="hover:opacity-80 transition-opacity">
+                      <span className="font-bold text-2xl gradient-text">🚪</span>
+                      <p className="text-gray-400 text-red-400">退出</p>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
             {isOwnProfile ? (
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="btn-primary flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                编辑资料
-              </button>
+              <div className="flex flex-col gap-2">
+                <button onClick={() => setShowEditModal(true)} className="btn-primary flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  编辑资料
+                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => musicInputRef.current?.click()} className="btn-secondary text-sm flex items-center gap-1">
+                    🎵 {profileUser.musicUrl ? '更换音乐' : '上传音乐'}
+                  </button>
+                  <button onClick={async () => {
+                    await axios.patch(`/api/users/${userId}/music-toggle`);
+                    setMusicEnabled(!musicEnabled);
+                  }} className={`btn-secondary text-sm ${!musicEnabled ? 'bg-red-500/20 text-red-400' : ''}`}>
+                    {musicEnabled ? '🔊 已开启' : '🔇 已禁用'}
+                  </button>
+                </div>
+                <input type="file" ref={musicInputRef} className="hidden" accept="audio/*" onChange={async (e) => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  const fd = new FormData(); fd.append('music', file);
+                  const res = await axios.post(`/api/users/${userId}/music`, fd);
+                  setMusicUrl(res.data.musicUrl);
+                  alert('音乐已上传');
+                }} />
+                {profileUser.musicUrl && musicEnabled && <audio controls src={profileUser.musicUrl} className="w-full mt-1" style={{height:32}} />}
+              </div>
             ) : (
               <div className="flex gap-3 flex-wrap justify-center md:justify-start">
                 {!isFriend && (
@@ -172,7 +210,7 @@ const Profile = () => {
         </div>
 
         {/* Vlog列表 */}
-        <div>
+        <div id="vlogs-section">
           <h2 className="text-2xl font-bold mb-6">
             {isOwnProfile ? '我的Vlog' : `${profileUser.username}的Vlog`}
           </h2>

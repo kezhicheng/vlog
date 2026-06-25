@@ -27,8 +27,9 @@ const Home = () => {
   };
 
   useEffect(() => {
+    if (!user?.id) return;
     fetchVlogs();
-  }, [user.id]);
+  }, [user?.id]);
 
   return (
     <div className="min-h-screen">

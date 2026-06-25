@@ -8,7 +8,8 @@ const CreateVlog = ({ isOpen, onClose, onSuccess }) => {
     title: '',
     content: '',
     videoUrl: '',
-    privacy: 'public'
+    privacy: 'public',
+    tags: ''
   });
   const [files, setFiles] = useState({
     video: null,
@@ -77,9 +78,6 @@ const CreateVlog = ({ isOpen, onClose, onSuccess }) => {
         // 上传文件
         setUploadProgress(30);
         const uploadResponse = await axios.post('/api/upload', uploadFormData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
           onUploadProgress: (progressEvent) => {
             const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setUploadProgress(progress);
@@ -91,19 +89,17 @@ const CreateVlog = ({ isOpen, onClose, onSuccess }) => {
       }
 
       // 创建Vlog
-      await axios.post('/api/vlogs', {
-        ...formData,
-        videoUrl,
-        images,
-        userId: user.id
-      });
+      const payload = { ...formData, videoUrl, images, userId: user.id, tags: (formData.tags || '').split(/[,，\s]+/).filter(Boolean) };
+      console.log('Creating vlog:', payload);
+      await axios.post('/api/vlogs', payload);
 
       // 重置表单
       setFormData({
         title: '',
         content: '',
         videoUrl: '',
-        privacy: 'public'
+        privacy: 'public',
+        tags: ''
       });
       setFiles({ video: null, images: [] });
       setPreviews({ video: '', images: [] });
@@ -113,7 +109,8 @@ const CreateVlog = ({ isOpen, onClose, onSuccess }) => {
       onClose();
     } catch (error) {
       console.error('创建Vlog失败:', error);
-      alert(error.response?.data?.message || '创建失败，请重试');
+      const msg = error.response?.data?.message || error.response?.status === 401 ? '登录过期，请重新登录' : error.message || '创建失败，请重试';
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -313,6 +310,13 @@ const CreateVlog = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">标签</label>
+            <input type="text" value={formData.tags}
+              onChange={e => setFormData({ ...formData, tags: e.target.value })}
+              placeholder="用逗号分隔，如：旅行, 美食, Vlog" className="input-field" />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               隐私设置
             </label>
@@ -322,7 +326,9 @@ const CreateVlog = ({ isOpen, onClose, onSuccess }) => {
               className="input-field"
             >
               <option value="public">🌍 公开 - 所有人可见</option>
-              <option value="private">🔒 私密 - 仅好友可见</option>
+              <option value="friends">👥 好友可见</option>
+              <option value="followers">👁 关注可见</option>
+              <option value="private">🔒 仅自己可见</option>
             </select>
           </div>
 

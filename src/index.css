@@ -72,3 +72,45 @@
 .perspective-1000 {
   perspective: 1000px;
 }
+
+/* ===== 移动端 TikTok 风格 ===== */
+@media (max-width: 768px) {
+  .container { @apply px-3; }
+  .card { @apply rounded-2xl p-4; }
+  h1 { @apply text-2xl !important; }
+
+  .app-content {
+    min-height: 100dvh;
+    padding-bottom: 60px;
+  }
+}
+
+/* 底部导航栏 */
+.mobile-nav {
+  @apply fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around py-2 px-1;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid rgba(255,255,255,0.1);
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.mobile-nav-item {
+  @apply flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all duration-200;
+  color: rgba(255,255,255,0.5);
+  background: none;
+  border: none;
+  cursor: pointer;
+  min-width: 48px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-item.active {
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.95);
+}
+

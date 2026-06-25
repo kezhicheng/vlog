@@ -85,6 +85,23 @@ const VlogDetail = () => {
     }
   };
 
+  const [shareModal, setShareModal] = useState(false);
+  const [friends, setFriends] = useState([]);
+
+  useEffect(() => { axios.get(`/api/friends/${user.id}`).then(r => setFriends(r.data)).catch(()=>{}); }, [user.id]);
+
+  const handleReport = () => {
+    const reason = prompt('举报原因：');
+    if (!reason) return;
+    axios.post('/api/reports', { targetType: 'vlog', targetId: id, reason }).then(() => alert('举报已提交')).catch(() => alert('举报失败'));
+  };
+
+  const handleShare = async (friendId) => {
+    await axios.post('/api/share-content', { receiverId: friendId, content: `📹 [Vlog] ${vlog.title}\n${window.location.origin}/vlog/${vlog.id}` });
+    setShareModal(false);
+    alert('已分享');
+  };
+
   const handleAddComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -174,6 +191,11 @@ const VlogDetail = () => {
                 )}
 
                 {/* 标题和内容 */}
+                {vlog.status === 'violation' && (
+                  <div className="bg-red-500/20 border border-red-500/40 text-red-300 px-4 py-3 rounded-xl mb-4 text-sm">
+                    🚫 该内容已被标记为违规，仅作者可见
+                  </div>
+                )}
                 <h1 className="text-3xl font-bold gradient-text mb-4">{vlog.title}</h1>
                 {vlog.content && (
                     <p className="text-gray-300 mb-6 whitespace-pre-wrap">{vlog.content}</p>
@@ -196,56 +218,41 @@ const VlogDetail = () => {
                     </div>
                   </Link>
 
-                  <div className="flex items-center gap-6">
-                    <button
-                        onClick={() => setShowLikesModal(true)}
-                        className={`flex items-center gap-2 transition-colors ${
-                            isLiked ? 'text-red-400' : 'text-gray-400 hover:text-white'
-                        }`}
-                    >
-                      <svg
-                          className="w-6 h-6"
-                          fill={isLiked ? 'currentColor' : 'none'}
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                      >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
+                  <div className="flex items-center gap-2 md:gap-4 flex-wrap">
+                    <button onClick={() => setShowLikesModal(true)}
+                      className={`flex items-center gap-1 transition-colors ${isLiked ? 'text-red-400' : 'text-gray-400 hover:text-white'}`}>
+                      <svg className="w-5 h-5" fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
-                      <span className="font-semibold">{vlog.likes || 0}</span>
+                      <span className="text-sm font-semibold">{vlog.likes || 0}</span>
                     </button>
-
-                    <button
-                        onClick={handleLike}
-                        className="btn-secondary text-sm"
-                    >
-                      {isLiked ? '取消点赞' : '点赞'}
+                    <button onClick={handleLike} className="text-sm px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 transition">
+                      {isLiked ? '❤️' : '🤍'}
                     </button>
-
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                      <span className="font-semibold">{vlog.views || 0}</span>
-                    </div>
+                    <span className="flex items-center gap-1 text-gray-400 text-sm">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      {vlog.views || 0}
+                    </span>
+                    <button onClick={handleReport} className="text-xs px-2 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">🚩</button>
+                    <button onClick={() => setShareModal(true)} className="text-xs px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition">↗</button>
                   </div>
                 </div>
               </div>
+
+              {/* 分享弹窗 */}
+              {shareModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShareModal(false)}>
+                  <div className="card max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
+                    <h3 className="font-bold mb-4">分享给好友</h3>
+                    {friends.length === 0 ? <p className="text-gray-500">暂无好友</p> :
+                      friends.map(f => (
+                        <button key={f.id} onClick={() => handleShare(f.id)} className="w-full text-left p-3 hover:bg-white/5 rounded-xl flex items-center gap-3">
+                          <img src={f.avatar} className="w-10 h-10 rounded-full" /><span>{f.username}</span>
+                        </button>))}
+                    <button onClick={() => setShareModal(false)} className="btn-secondary w-full mt-4">取消</button>
+                  </div>
+                </div>
+              )}
 
               {/* 评论区 */}
               <div className="card">
