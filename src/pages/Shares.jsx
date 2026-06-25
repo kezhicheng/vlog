@@ -390,7 +390,7 @@ const ShareDetail = ({ user, onBack }) => {
             🚫 该内容已被标记为违规，仅作者可见
           </div>
         )}
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">{share.title}</h1>
+        <h1 className="text-2xl md:text-4xl font-bold mb-2 break-words">{share.title}</h1>
         {share.tags?.length > 0 && (
           <div className="flex gap-2 flex-wrap mb-4">
             {share.tags.map(t => (
@@ -400,7 +400,7 @@ const ShareDetail = ({ user, onBack }) => {
           </div>
         )}
         {share.content && (
-          <div className="text-gray-300 text-lg leading-relaxed mb-6 whitespace-pre-wrap">{share.content}</div>
+          <div className="text-gray-300 text-sm md:text-lg leading-relaxed mb-6 whitespace-pre-wrap break-words">{share.content}</div>
         )}
 
         {/* 链接卡片 */}

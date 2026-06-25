@@ -196,9 +196,9 @@ const VlogDetail = () => {
                     🚫 该内容已被标记为违规，仅作者可见
                   </div>
                 )}
-                <h1 className="text-3xl font-bold gradient-text mb-4">{vlog.title}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-4 break-words">{vlog.title}</h1>
                 {vlog.content && (
-                    <p className="text-gray-300 mb-6 whitespace-pre-wrap">{vlog.content}</p>
+                    <p className="text-gray-300 mb-6 whitespace-pre-wrap break-words leading-relaxed text-sm md:text-base">{vlog.content}</p>
                 )}
 
                 {/* 作者和统计 */}

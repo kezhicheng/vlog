@@ -10,6 +10,7 @@ const Feed = () => {
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [sortBy, setSortBy] = useState('time'); // 'time' | 'hot' | 'old'
   const loaderRef = useRef(null);
 
   const fetchFeed = useCallback(async (append = false) => {
@@ -49,6 +50,21 @@ const Feed = () => {
     fetchFeed(false);
   };
 
+  // 排序：置顶始终在前，其余按选择排序
+  const sortedItems = React.useMemo(() => {
+    const pinned = items.filter(i => i.status === 'pin');
+    const normal = items.filter(i => i.status !== 'pin');
+    if (sortBy === 'hot') {
+      const pop = (i) => (i.views||0) + (i.likes||0)*5;
+      normal.sort((a, b) => pop(b) - pop(a));
+    } else if (sortBy === 'old') {
+      normal.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else {
+      normal.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    return [...pinned, ...normal];
+  }, [items, sortBy]);
+
   const TagList = ({ tags }) => {
     const list = typeof tags === 'string' ? (() => { try { return JSON.parse(tags); } catch { return []; } })() : (tags || []);
     if (!list.length) return null;
@@ -64,12 +80,20 @@ const Feed = () => {
     <div className="min-h-screen">
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h1 className="text-3xl font-bold gradient-text">📡 动态</h1>
           <button onClick={handleRefresh} disabled={refreshing}
             className={`btn-secondary text-sm ${refreshing ? 'opacity-50' : ''}`}>
             {refreshing ? '⏳' : '🔄'} 刷新
           </button>
+        </div>
+        <div className="flex gap-2 mb-4">
+          {[{k:'time',l:'🕐 最新'},{k:'hot',l:'🔥 最热'},{k:'old',l:'📜 最早'}].map(o => (
+            <button key={o.k} onClick={() => setSortBy(o.k)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition ${sortBy===o.k ? 'bg-white/20 text-white' : 'glass-effect text-gray-400 hover:text-white'}`}>
+              {o.l}
+            </button>
+          ))}
         </div>
 
         {items.length === 0 ? (
@@ -81,7 +105,7 @@ const Feed = () => {
         ) : (
           <>
             <div className="space-y-4">
-              {items.map(item => {
+              {sortedItems.map(item => {
                 const isVlog = item.itemType === 'vlog';
                 const detailUrl = isVlog ? `/vlog/${item.id}` : `/shares/${item.id}`;
                 const isPinned = item.status === 'pin';
