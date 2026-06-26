@@ -1,21 +1,12 @@
-@echo off
-title Vlog - Production Server
-echo ============================================
-echo   Vlog - 正在打包前端...
-echo ============================================
-call npm run build
-if %errorlevel% neq 0 (
-    echo 打包失败！
-    pause
-    exit /b 1
-)
-echo 打包完成！
-echo.
-echo ============================================
-echo   启动服务器...
-echo   本机访问: http://localhost:5000
-echo   其他电脑: http://局域网IP:5000
-echo ============================================
-cd server
-node server.js
-pause
+ @echo off
+  echo 构建前端...
+  call npm run build
+  if %errorlevel% neq 0 (echo 构建失败 && pause && exit /b 1)
+  echo 上传前端...
+  scp -i %USERPROFILE%\.ssh\vlog_server -o StrictHostKeyChecking=no -r dist admin@120.25.74.142:~/vlog/
+  echo 上传服务端...
+  scp -i %USERPROFILE%\.ssh\vlog_server -o StrictHostKeyChecking=no server\server.js admin@120.25.74.142:~/vlog/server/
+  echo 重启服务...
+  ssh -i %USERPROFILE%\.ssh\vlog_server -o StrictHostKeyChecking=no admin@120.25.74.142 "pm2 restart vlog"
+  echo 部署完成！
+  pause

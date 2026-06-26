@@ -19,6 +19,8 @@ const Messages = () => {
   const [showGroupEmojiPicker, setShowGroupEmojiPicker] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageModal, setImageModal] = useState(null);
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -382,6 +384,36 @@ const Messages = () => {
     }
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const chunks = [];
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const fd = new FormData();
+        fd.append('image', blob, 'voice_' + Date.now() + '.webm');
+        try {
+          const up = await axios.post('/api/messages/upload', fd);
+          const voiceUrl = up.data.imageUrl;
+          if (selectedChat) {
+            await axios.post('/api/messages', { senderId: user.id, receiverId: selectedChat.user.id, content: voiceUrl, type: 'voice' });
+            fetchConversations();
+          }
+        } catch { alert('发送语音失败'); }
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setRecording(true);
+    } catch { alert('无法访问麦克风'); }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) { mediaRecorderRef.current.stop(); setRecording(false); }
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -468,7 +500,9 @@ const Messages = () => {
             className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-4`}
         >
           <div className={`max-w-[70%] ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
-            {msg.type === 'image' ? (
+            {msg.type === 'voice' ? (
+                <audio controls src={msg.content} className="max-w-[200px] h-8" />
+            ) : msg.type === 'image' ? (
                 isImageFile(msg.content) ? (
                   <img
                       src={msg.content}
@@ -605,7 +639,7 @@ const Messages = () => {
                                   </div>
                                   {item.lastMessage && (
                                       <p className="text-sm text-gray-400 truncate">
-                                        {item.lastMessage.type === 'image' ? (isImageFile(item.lastMessage.content) ? '[图片]' : '[文件]') : item.lastMessage.content}
+                                        {item.lastMessage.type === 'voice' ? '[语音]' : item.lastMessage.type === 'image' ? (isImageFile(item.lastMessage.content) ? '[图片]' : '[文件]') : item.lastMessage.content}
                                       </p>
                                   )}
                                 </div>
@@ -683,7 +717,9 @@ const Messages = () => {
                               <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[70%] px-4 py-2 rounded-2xl ${isMine ? 'bg-purple-500/80 text-white' : 'glass-effect text-gray-200'}`}>
                                   {!isMine && <p className="text-xs text-purple-400 mb-1">{msg.sender?.username || '?'}</p>}
-                                  {msg.type === 'image' ? (
+                                  {msg.type === 'voice' ? (
+                                    <audio controls src={msg.content} className="max-w-[180px] h-7" />
+                                  ) : msg.type === 'image' ? (
                                     isImageFile(msg.content) ? (
                                       <img src={msg.content} alt="图片" className="max-w-[200px] rounded-xl cursor-pointer hover:opacity-90" onClick={() => setImageModal(msg.content)} />
                                     ) : (
@@ -808,6 +844,18 @@ const Messages = () => {
                                   disabled={!canSend || uploadingImage}
                               >
                                 {uploadingImage ? '上传中...' : '📎'}
+                              </button>
+                              <button
+                                  type="button"
+                                  onMouseDown={startRecording}
+                                  onMouseUp={stopRecording}
+                                  onMouseLeave={stopRecording}
+                                  onTouchStart={startRecording}
+                                  onTouchEnd={stopRecording}
+                                  className={`btn-secondary px-4 py-3 ${recording ? 'bg-red-500/50 text-red-400' : ''}`}
+                                  disabled={!canSend}
+                              >
+                                {recording ? '🔴' : '🎤'}
                               </button>
                               <button
                                   type="submit"
