@@ -86,6 +86,8 @@ const VlogDetail = () => {
   };
 
   const [shareModal, setShareModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editData, setEditData] = useState({});
   const [friends, setFriends] = useState([]);
 
   useEffect(() => { axios.get(`/api/friends/${user.id}`).then(r => setFriends(r.data)).catch(()=>{}); }, [user.id]);
@@ -94,6 +96,16 @@ const VlogDetail = () => {
     const reason = prompt('举报原因：');
     if (!reason) return;
     axios.post('/api/reports', { targetType: 'vlog', targetId: id, reason }).then(() => alert('举报已提交')).catch(() => alert('举报失败'));
+  };
+
+  const handleEdit = async () => {
+    if (!editData.title) return;
+    await axios.patch(`/api/vlogs/${id}`, {
+      title: editData.title, content: editData.content,
+      tags: (editData.tags || '').split(/[,，\s]+/).filter(Boolean)
+    });
+    setVlog(prev => ({ ...prev, title: editData.title, content: editData.content, tags: editData.tags }));
+    setEditMode(false);
   };
 
   const handleShare = async (friendId) => {
@@ -191,14 +203,31 @@ const VlogDetail = () => {
                 )}
 
                 {/* 标题和内容 */}
-                {vlog.status === 'violation' && (
-                  <div className="bg-red-500/20 border border-red-500/40 text-red-300 px-4 py-3 rounded-xl mb-4 text-sm">
-                    🚫 该内容已被标记为违规，仅作者可见
+                {editMode ? (
+                  <div className="space-y-3 mb-4">
+                    <input value={editData.title} onChange={e => setEditData({...editData, title: e.target.value})}
+                      className="input-field text-lg" placeholder="标题" />
+                    <textarea value={editData.content} onChange={e => setEditData({...editData, content: e.target.value})}
+                      className="input-field min-h-[100px]" placeholder="内容" rows="5" />
+                    <input value={editData.tags} onChange={e => setEditData({...editData, tags: e.target.value})}
+                      className="input-field text-sm" placeholder="标签（逗号分隔）" />
+                    <div className="flex gap-2">
+                      <button onClick={handleEdit} className="btn-primary text-sm">💾 保存</button>
+                      <button onClick={() => setEditMode(false)} className="btn-secondary text-sm">取消</button>
+                    </div>
                   </div>
-                )}
-                <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-4 break-words">{vlog.title}</h1>
-                {vlog.content && (
-                    <p className="text-gray-300 mb-6 whitespace-pre-wrap break-words leading-relaxed text-sm md:text-base">{vlog.content}</p>
+                ) : (
+                  <>
+                    {vlog.status === 'violation' && (
+                      <div className="bg-red-500/20 border border-red-500/40 text-red-300 px-4 py-3 rounded-xl mb-4 text-sm">
+                        🚫 该内容已被标记为违规，仅作者可见
+                      </div>
+                    )}
+                    <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-4 break-words">{vlog.title}</h1>
+                    {vlog.content && (
+                        <p className="text-gray-300 mb-6 whitespace-pre-wrap break-words leading-relaxed text-sm md:text-base">{vlog.content}</p>
+                    )}
+                  </>
                 )}
 
                 {/* 作者和统计 */}
@@ -235,6 +264,10 @@ const VlogDetail = () => {
                     </span>
                     <button onClick={handleReport} className="text-xs px-2 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">🚩</button>
                     <button onClick={() => setShareModal(true)} className="text-xs px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition">↗</button>
+                    {vlog.userId === user.id && (
+                      <button onClick={() => { setEditMode(true); setEditData({ title: vlog.title, content: vlog.content, tags: (vlog.tags||[]).join(', ') }); }}
+                        className="text-xs px-2 py-1 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition">✏️</button>
+                    )}
                   </div>
                 </div>
               </div>

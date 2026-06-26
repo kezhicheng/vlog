@@ -599,6 +599,18 @@ app.get('/api/vlogs/:id', (req, res) => {
   res.json(vlog);
 });
 
+// 编辑Vlog（仅作者）
+app.patch('/api/vlogs/:id', authMiddleware, (req, res) => {
+  const vlog = db.prepare('SELECT * FROM vlogs WHERE id=?').get(req.params.id);
+  if (!vlog) return res.status(404).json({ message: 'Vlog不存在' });
+  if (vlog.userId !== req.user.id) return res.status(403).json({ message: '无权编辑' });
+  const { title, content, tags } = req.body;
+  if (title !== undefined) db.prepare('UPDATE vlogs SET title=? WHERE id=?').run(title, req.params.id);
+  if (content !== undefined) db.prepare('UPDATE vlogs SET content=? WHERE id=?').run(content, req.params.id);
+  if (tags !== undefined) db.prepare('UPDATE vlogs SET tags=? WHERE id=?').run(JSON.stringify(tags), req.params.id);
+  res.json(parseVlog(db.prepare('SELECT * FROM vlogs WHERE id=?').get(req.params.id)));
+});
+
 app.post('/api/vlogs/:id/like', authMiddleware, (req, res) => {
   const vlog = db.prepare('SELECT * FROM vlogs WHERE id=?').get(req.params.id);
   if (!vlog) return res.status(404).json({ message: 'Vlog不存在' });
@@ -1252,6 +1264,21 @@ app.get('/api/shares/:id', (req, res) => {
   share.author = userWithoutPassword(db.prepare('SELECT * FROM users WHERE id=?').get(share.userId));
   share.favorites = db.prepare('SELECT COUNT(*) as c FROM share_favorites WHERE shareId=?').get(share.id).c;
   res.json(share);
+});
+
+// 编辑分享（仅作者）
+app.patch('/api/shares/:id', authMiddleware, (req, res) => {
+  const share = db.prepare('SELECT * FROM shares WHERE id=?').get(req.params.id);
+  if (!share) return res.status(404).json({ message: '分享不存在' });
+  if (share.userId !== req.user.id) return res.status(403).json({ message: '无权编辑' });
+  const { title, content, link, linkTitle, tags, category } = req.body;
+  if (title !== undefined) db.prepare('UPDATE shares SET title=? WHERE id=?').run(title, req.params.id);
+  if (content !== undefined) db.prepare('UPDATE shares SET content=? WHERE id=?').run(content, req.params.id);
+  if (link !== undefined) db.prepare('UPDATE shares SET link=? WHERE id=?').run(link, req.params.id);
+  if (linkTitle !== undefined) db.prepare('UPDATE shares SET linkTitle=? WHERE id=?').run(linkTitle, req.params.id);
+  if (tags !== undefined) db.prepare('UPDATE shares SET tags=? WHERE id=?').run(JSON.stringify(tags), req.params.id);
+  if (category !== undefined) db.prepare('UPDATE shares SET category=? WHERE id=?').run(category, req.params.id);
+  res.json(parseShare(db.prepare('SELECT * FROM shares WHERE id=?').get(req.params.id)));
 });
 
 // 获取用户的分享

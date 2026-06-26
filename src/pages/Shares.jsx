@@ -278,6 +278,8 @@ const ShareDetail = ({ user, onBack }) => {
   const [newComment, setNewComment] = useState('');
   const [favorited, setFavorited] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editData, setEditData] = useState({});
   const [shareModal, setShareModal] = useState(false);
   const [friends, setFriends] = useState([]);
 
@@ -287,6 +289,17 @@ const ShareDetail = ({ user, onBack }) => {
     const reason = prompt('举报原因：');
     if (!reason) return;
     axios.post('/api/reports', { targetType: 'share', targetId: id, reason }).then(() => alert('已提交')).catch(() => alert('失败'));
+  };
+
+  const handleEdit = async () => {
+    if (!editData.title) return;
+    await axios.patch(`/api/shares/${id}`, {
+      title: editData.title, content: editData.content, link: editData.link,
+      linkTitle: editData.linkTitle, category: editData.category,
+      tags: (editData.tags || '').split(/[,，\s]+/).filter(Boolean)
+    });
+    setShare(prev => ({ ...prev, ...editData }));
+    setEditMode(false);
   };
 
   const handleShare = async (friendId) => {
@@ -401,27 +414,48 @@ const ShareDetail = ({ user, onBack }) => {
         </div>
 
         {/* 标题和内容 */}
-        {share.status === 'violation' && (
-          <div className="bg-red-500/20 border border-red-500/40 text-red-300 px-4 py-3 rounded-xl mb-4 text-sm">
-            🚫 该内容已被标记为违规，仅作者可见
+        {editMode ? (
+          <div className="space-y-3 mb-4">
+            <input value={editData.title} onChange={e => setEditData({...editData, title: e.target.value})}
+              className="input-field text-lg" placeholder="标题" />
+            <textarea value={editData.content} onChange={e => setEditData({...editData, content: e.target.value})}
+              className="input-field min-h-[100px]" placeholder="内容(支持Markdown)" rows="5" />
+            <input value={editData.linkTitle} onChange={e => setEditData({...editData, linkTitle: e.target.value})}
+              className="input-field text-sm" placeholder="链接标题" />
+            <input value={editData.link} onChange={e => setEditData({...editData, link: e.target.value})}
+              className="input-field text-sm" placeholder="链接URL" />
+            <input value={editData.tags} onChange={e => setEditData({...editData, tags: e.target.value})}
+              className="input-field text-sm" placeholder="标签（逗号分隔）" />
+            <div className="flex gap-2">
+              <button onClick={handleEdit} className="btn-primary text-sm">💾 保存</button>
+              <button onClick={() => setEditMode(false)} className="btn-secondary text-sm">取消</button>
+            </div>
           </div>
-        )}
-        <h1 className="text-2xl md:text-4xl font-bold mb-2 break-words">{share.title}</h1>
-        {share.tags?.length > 0 && (
-          <div className="flex gap-2 flex-wrap mb-4">
-            {share.tags.map(t => (
-              <Link key={t} to={`/tags/${encodeURIComponent(t)}`}
-                className="text-sm px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition">#{t}</Link>
-            ))}
-          </div>
-        )}
-        {share.content && (
-          <div className="text-gray-300 text-sm md:text-lg leading-relaxed mb-6 break-words"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(share.content) }} />
+        ) : (
+          <>
+            {share.status === 'violation' && (
+              <div className="bg-red-500/20 border border-red-500/40 text-red-300 px-4 py-3 rounded-xl mb-4 text-sm">
+                🚫 该内容已被标记为违规，仅作者可见
+              </div>
+            )}
+            <h1 className="text-2xl md:text-4xl font-bold mb-2 break-words">{share.title}</h1>
+            {share.tags?.length > 0 && (
+              <div className="flex gap-2 flex-wrap mb-4">
+                {share.tags.map(t => (
+                  <Link key={t} to={`/tags/${encodeURIComponent(t)}`}
+                    className="text-sm px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition">#{t}</Link>
+                ))}
+              </div>
+            )}
+            {share.content && (
+              <div className="text-gray-300 text-sm md:text-lg leading-relaxed mb-6 break-words"
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(share.content) }} />
+            )}
+          </>
         )}
 
         {/* 链接卡片 */}
-        {share.link && (
+        {!editMode && share.link && (
           <a href={share.link} target="_blank" rel="noopener noreferrer"
             className="block bg-white/5 rounded-2xl p-6 mb-6 hover:bg-white/10 transition border border-white/10">
             <div className="flex items-center gap-3 mb-2">
@@ -469,6 +503,10 @@ const ShareDetail = ({ user, onBack }) => {
           <span className="flex items-center gap-1 text-gray-400 text-sm">👁 {share.views || 0}</span>
           <button onClick={handleReport} className="text-xs px-2 py-1 rounded-lg bg-red-500/10 text-red-400">🚩</button>
           <button onClick={() => setShareModal(true)} className="text-xs px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400">↗</button>
+          {share.userId === user?.id && (
+            <button onClick={() => { setEditMode(true); setEditData({ title: share.title, content: share.content, link: share.link, linkTitle: share.linkTitle, category: share.category, tags: (share.tags||[]).join(', ') }); }}
+              className="text-xs px-2 py-1 rounded-lg bg-green-500/10 text-green-400">✏️</button>
+          )}
         </div>
 
         {/* 分享弹窗 */}
