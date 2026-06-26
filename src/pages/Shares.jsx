@@ -21,6 +21,22 @@ const formatFileSize = (bytes) => {
   return (bytes / 1048576).toFixed(1) + 'MB';
 };
 
+// 简易 Markdown 渲染
+const renderMarkdown = (text) => {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^### (.+)$/gm, '<h4 class=\"text-base font-bold mt-3 mb-1\">$1</h4>')
+    .replace(/^## (.+)$/gm, '<h3 class=\"text-lg font-bold mt-4 mb-2\">$1</h3>')
+    .replace(/^# (.+)$/gm, '<h2 class=\"text-xl font-bold mt-4 mb-2\">$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code class=\"bg-white/10 px-1.5 py-0.5 rounded text-sm\">$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href=\"$2\" target=\"_blank\" class=\"text-blue-400 underline\">$1</a>')
+    .replace(/^- (.+)$/gm, '<li class=\"ml-4 list-disc\">$1</li>')
+    .replace(/\n/g, '<br/>');
+};
+
 const isImageFile = (url) => /\.(jpe?g|png|gif|webp|svg)(\?|$)/i.test(url);
 
 // ========== 分享列表页 ==========
@@ -93,7 +109,7 @@ const ShareList = ({ shares, loading, category, setCategory, user, onLike, onDel
               </span>
               {/* 标题 */}
               <h3 className="font-bold mb-1 line-clamp-2 leading-snug">{share.title}</h3>
-              {share.content && <p className="text-gray-400 text-sm mb-3 line-clamp-2 leading-relaxed">{share.content}</p>}
+              {share.content && <p className="text-gray-400 text-sm mb-3 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: renderMarkdown(share.content).replace(/<br\/>/g,' ') }} />}
               {share.link && (
                 <div className="bg-white/5 rounded-xl p-2 mb-3 border border-white/5">
                   <p className="text-blue-400 text-xs font-medium truncate">{share.linkTitle || share.link}</p>
@@ -400,7 +416,8 @@ const ShareDetail = ({ user, onBack }) => {
           </div>
         )}
         {share.content && (
-          <div className="text-gray-300 text-sm md:text-lg leading-relaxed mb-6 whitespace-pre-wrap break-words">{share.content}</div>
+          <div className="text-gray-300 text-sm md:text-lg leading-relaxed mb-6 break-words"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(share.content) }} />
         )}
 
         {/* 链接卡片 */}
