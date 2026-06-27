@@ -765,7 +765,7 @@ const Messages = () => {
                         </div>
                         <EmojiPicker isOpen={showGroupEmojiPicker} onClose={() => setShowGroupEmojiPicker(false)} onSelect={handleGroupEmojiSelect} />
                         <form onSubmit={handleSendGroupMessage} className="flex-shrink-0 pb-safe">
-                          <div className="flex items-center gap-1.5 bg-white/10 rounded-2xl p-1.5 ring-1 ring-white/10 focus-within:ring-purple-500/50 focus-within:bg-white/[0.07] transition-all">
+                          <div className="flex items-center gap-1.5 bg-white/10 rounded-2xl p-1.5 ring-1 ring-transparent">
                             <button type="button" onClick={() => setShowGroupEmojiPicker(!showGroupEmojiPicker)}
                               className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-xl flex-shrink-0">😊</button>
                             <button type="button" onClick={() => fileInputRef.current?.click()}
@@ -843,7 +843,7 @@ const Messages = () => {
                           onSelect={handleEmojiSelect}
                         />
                         <form onSubmit={handleSendMessage} className="flex-shrink-0 pb-safe">
-                          <div className="flex items-center gap-1.5 bg-white/10 rounded-2xl p-1.5 ring-1 ring-white/10 focus-within:ring-purple-500/50 focus-within:bg-white/[0.07] transition-all">
+                          <div className="flex items-center gap-1.5 bg-white/10 rounded-2xl p-1.5 ring-1 ring-transparent">
                             {/* 左侧：表情 + 文件 */}
                             <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                               className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-xl flex-shrink-0"
