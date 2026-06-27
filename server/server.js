@@ -889,7 +889,7 @@ app.post('/api/groups/:id/messages', authMiddleware, (req, res) => {
   if (!g) return res.status(404).json({ message: '群不存在' });
   if (g.muteAll && g.createdBy !== req.user.id) return res.status(403).json({ message: '全员禁言中，仅群主可发言' });
   const { content, type = 'text' } = req.body;
-  db.prepare('INSERT INTO group_messages (groupId, senderId, content, type, createdAt) VALUES (?, ?, ?, ?, datetime(\'now\'))').run(req.params.id, req.user.id, content, type);
+  db.prepare("INSERT INTO group_messages (groupId, senderId, content, type, createdAt) VALUES (?, ?, ?, ?, datetime('now', '+8 hours'))").run(req.params.id, req.user.id, content, type);
   res.json({ success: true });
 });
 
@@ -945,16 +945,7 @@ app.post('/api/groups/:id/mute-all', authMiddleware, (req, res) => {
 
 // 获取群消息
 app.get('/api/groups/:id/messages', authMiddleware, (req, res) => {
-  const g = db.prepare('SELECT * FROM groups WHERE id=?').get(req.params.id);
-  let msgs = db.prepare('SELECT * FROM group_messages WHERE groupId=? ORDER BY createdAt').all(req.params.id);
-  // 历史可见：-1=全部, 0=仅系统消息, >0=最近N条。但自己的消息永远可见
-  if (g && g.historyVisible === 0) {
-    msgs = msgs.filter(m => m.type === 'system' || m.senderId === req.user.id);
-  } else if (g && g.historyVisible > 0) {
-    const recent = msgs.slice(-g.historyVisible);
-    const ownOlder = msgs.filter(m => m.senderId === req.user.id && !recent.includes(m));
-    msgs = [...recent, ...ownOlder];
-  }
+  const msgs = db.prepare('SELECT * FROM group_messages WHERE groupId=? ORDER BY createdAt').all(req.params.id);
   res.json(msgs.map(m => ({ ...m, sender: m.senderId ? userWithoutPassword(db.prepare('SELECT * FROM users WHERE id=?').get(m.senderId)) : null })));
 });
 
