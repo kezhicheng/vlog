@@ -583,19 +583,6 @@ const Messages = () => {
 
   const showMobileChat = isMobile && (selectedChat || selectedGroup);
 
-  // 手机端键盘弹起时调整聊天面板高度
-  useEffect(() => {
-    if (!isMobile || !showMobileChat) return;
-    const panel = document.querySelector('[data-chat-panel]');
-    if (!panel || !window.visualViewport) return;
-    const update = () => {
-      const vh = window.visualViewport.height;
-      panel.style.height = (vh - 56 - 60) + 'px'; // navbar + mobileNav
-    };
-    update();
-    window.visualViewport.addEventListener('resize', update);
-    return () => window.visualViewport.removeEventListener('resize', update);
-  }, [isMobile, showMobileChat]);
 
   return (
       <div className="min-h-screen">
@@ -609,7 +596,7 @@ const Messages = () => {
                 <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
               </div>
           ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: isMobile ? 'calc(100dvh - 56px)' : 'calc(100vh - 250px)' }}>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: isMobile ? 'calc(100vh - 116px)' : 'calc(100vh - 250px)' }}>
                 {/* 会话/好友列表 */}
                 <div className={`lg:col-span-1 card overflow-y-auto ${showMobileChat ? 'hidden' : ''}`}>
                   {/* 标签切换：好友 / 群聊 */}
@@ -689,7 +676,7 @@ const Messages = () => {
                 </div>
 
                 {/* 聊天窗口 */}
-                <div data-chat-panel className={`lg:col-span-2 card flex flex-col ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={isMobile && showMobileChat ? { position:'fixed', top:'56px', bottom:'60px', left:0, right:0, zIndex:50 } : { height: 'calc(100vh - 250px)' }}>
+                <div data-chat-panel className={`lg:col-span-2 card flex flex-col overflow-hidden ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={isMobile && showMobileChat ? { position:'fixed', top:56, bottom:60, left:0, right:0, zIndex:50 } : { height: 'calc(100vh - 250px)' }}>
                   {/* 手机端返回按钮 */}
                   {isMobile && showMobileChat && (
                     <div className="sticky top-0 z-20 glass-effect backdrop-blur-xl pb-2 pt-2 -mt-4 -mx-6 px-6 rounded-t-3xl">
