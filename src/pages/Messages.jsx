@@ -385,6 +385,7 @@ const Messages = () => {
   };
 
   const startRecording = async () => {
+    if (!navigator.mediaDevices) { alert('浏览器不支持录音'); return; }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -407,7 +408,12 @@ const Messages = () => {
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
       setRecording(true);
-    } catch { alert('无法访问麦克风'); }
+    } catch (e) {
+      const msg = location.protocol === 'http:' && location.hostname !== 'localhost'
+        ? '录音需要HTTPS，本地开发请用localhost访问'
+        : '无法访问麦克风，请检查浏览器权限';
+      alert(msg);
+    }
   };
 
   const stopRecording = () => {
@@ -738,19 +744,23 @@ const Messages = () => {
                           })}
                           <div ref={messagesEndRef} />
                         </div>
-                        <form onSubmit={handleSendGroupMessage} className="relative flex gap-2 flex-shrink-0 items-center">
-                          <button type="button" onClick={() => setShowGroupEmojiPicker(!showGroupEmojiPicker)} className="text-xl px-2 py-1 hover:bg-white/10 rounded-lg transition">😊</button>
-                          <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xl px-2 py-1 hover:bg-white/10 rounded-lg transition" disabled={uploadingImage}>🖼</button>
-                          <input type="file" ref={fileInputRef} className="hidden" onChange={handleGroupImageUpload} />
-                          <input value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="输入群消息..."
-                            className="input-field flex-1" disabled={selectedGroup?.muteAll && selectedGroup?.createdBy !== user.id} />
-                          <button type="submit" className="btn-primary" disabled={selectedGroup?.muteAll && selectedGroup?.createdBy !== user.id}>发送</button>
-                          <EmojiPicker
-                            isOpen={showGroupEmojiPicker}
-                            onClose={() => setShowGroupEmojiPicker(false)}
-                            onSelect={handleGroupEmojiSelect}
-                          />
+                        <EmojiPicker isOpen={showGroupEmojiPicker} onClose={() => setShowGroupEmojiPicker(false)} onSelect={handleGroupEmojiSelect} />
+                        <form onSubmit={handleSendGroupMessage} className="flex-shrink-0">
+                          <div className="flex items-center gap-1.5 bg-white/5 rounded-2xl p-1.5">
+                            <button type="button" onClick={() => setShowGroupEmojiPicker(!showGroupEmojiPicker)}
+                              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-xl flex-shrink-0">😊</button>
+                            <button type="button" onClick={() => fileInputRef.current?.click()}
+                              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-lg flex-shrink-0">➕</button>
+                            <input value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="输入群消息..."
+                              className="flex-1 bg-transparent text-sm outline-none py-2 px-1 min-h-[40px] placeholder-gray-500"
+                              disabled={selectedGroup?.muteAll && selectedGroup?.createdBy !== user.id} />
+                            <button type="submit" disabled={selectedGroup?.muteAll && selectedGroup?.createdBy !== user.id}
+                              className="w-10 h-10 flex items-center justify-center rounded-xl bg-purple-500/80 hover:bg-purple-500 transition flex-shrink-0">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                            </button>
+                          </div>
                         </form>
+                        <input type="file" ref={fileInputRef} className="hidden" onChange={handleGroupImageUpload} />
                       </>
                   ) : selectedChat ? (
                       <>
@@ -807,79 +817,52 @@ const Messages = () => {
                           <div ref={messagesEndRef} />
                         </div>
 
-                        {/* 输入框 */}
-                        <form onSubmit={handleSendMessage} className="relative flex-shrink-0">
-                          <div className="flex items-end gap-2">
-                            <div className="flex-1 relative">
-                        <textarea
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            className="input-field resize-none pr-20"
-                            placeholder={canSend ? "输入消息..." : "非好友只能发送一条消息"}
-                            rows="2"
-                            disabled={!canSend || uploadingImage}
-                            maxLength={maxLength}
+                        {/* 输入框 — 微信风格 */}
+                        <EmojiPicker
+                          isOpen={showEmojiPicker}
+                          onClose={() => setShowEmojiPicker(false)}
+                          onSelect={handleEmojiSelect}
                         />
-                              <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                          <span className={`text-xs ${currentLength > maxLength * 0.9 ? 'text-red-400' : 'text-gray-400'}`}>
-                            {currentLength}/{maxLength}
-                          </span>
-                              </div>
-                            </div>
+                        <form onSubmit={handleSendMessage} className="flex-shrink-0">
+                          <div className="flex items-center gap-1.5 bg-white/5 rounded-2xl p-1.5">
+                            {/* 左侧：表情 + 文件 */}
+                            <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-xl flex-shrink-0"
+                              disabled={!canSend}>😊</button>
+                            <button type="button" onClick={() => fileInputRef.current?.click()}
+                              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-lg flex-shrink-0"
+                              disabled={!canSend || uploadingImage}>➕</button>
 
-                            {/* 工具按钮 */}
-                            <div className="flex gap-2">
-                              <button
-                                  type="button"
-                                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                  className="btn-secondary px-4 py-3"
-                                  disabled={!canSend}
-                              >
-                                😊
+                            {/* 中间：输入框 */}
+                            <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)}
+                              className="flex-1 bg-transparent text-sm resize-none outline-none py-2 px-1 min-h-[40px] max-h-[80px] placeholder-gray-500"
+                              placeholder={canSend ? "输入消息..." : "不能发送"}
+                              rows="1"
+                              disabled={!canSend || uploadingImage}
+                              maxLength={maxLength}
+                              onInput={e => { e.target.style.height='auto'; e.target.style.height=Math.min(e.target.scrollHeight,80)+'px'; }}
+                              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); } }}
+                            />
+
+                            {/* 右侧：语音/发送 */}
+                            {newMessage.trim() ? (
+                              <button type="submit" disabled={!canSend || uploadingImage}
+                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-purple-500/80 hover:bg-purple-500 transition flex-shrink-0">
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                               </button>
-                              <button
-                                  type="button"
-                                  onClick={() => fileInputRef.current?.click()}
-                                  className="btn-secondary px-4 py-3"
-                                  disabled={!canSend || uploadingImage}
-                              >
-                                {uploadingImage ? '上传中...' : '📎'}
-                              </button>
-                              <button
-                                  type="button"
-                                  onMouseDown={startRecording}
-                                  onMouseUp={stopRecording}
-                                  onMouseLeave={stopRecording}
-                                  onTouchStart={startRecording}
-                                  onTouchEnd={stopRecording}
-                                  className={`btn-secondary px-4 py-3 ${recording ? 'bg-red-500/50 text-red-400' : ''}`}
-                                  disabled={!canSend}
-                              >
+                            ) : (
+                              <button type="button"
+                                onMouseDown={startRecording} onMouseUp={stopRecording} onMouseLeave={stopRecording}
+                                onTouchStart={startRecording} onTouchEnd={stopRecording}
+                                className={`w-10 h-10 flex items-center justify-center rounded-xl transition flex-shrink-0 ${recording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-white/10'}`}
+                                disabled={!canSend}>
                                 {recording ? '🔴' : '🎤'}
                               </button>
-                              <button
-                                  type="submit"
-                                  disabled={!canSend || !newMessage.trim() || uploadingImage}
-                                  className="btn-primary px-6 py-3"
-                              >
-                                发送
-                              </button>
-                            </div>
+                            )}
                           </div>
-
-                          <input
-                              ref={fileInputRef}
-                              type="file"
-                              onChange={handleImageUpload}
-                              className="hidden"
-                          />
-
-                          <EmojiPicker
-                              isOpen={showEmojiPicker}
-                              onClose={() => setShowEmojiPicker(false)}
-                              onSelect={handleEmojiSelect}
-                          />
                         </form>
+
+                        <input ref={fileInputRef} type="file" onChange={handleImageUpload} className="hidden" />
                       </>
                   ) : (
                       <div className="flex-1 flex items-center justify-center">
