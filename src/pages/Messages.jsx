@@ -952,8 +952,8 @@ const Messages = () => {
               <label className="text-sm text-gray-400 mb-2 block">新成员可见历史</label>
               <div className="flex gap-2 mb-4">
                 {[{v:0,l:'仅欢迎语'},{v:30,l:'最近30条'},{v:-1,l:'全部'}].map(opt => {
-                  const cur = selectedGroup?.historyVisible ?? 0;
-                  const sel = opt.v === -1 ? (cur !== 0 && cur !== 30) : cur === opt.v;
+                  const cur = selectedGroup?.historyVisible ?? -1;
+                  const sel = cur === opt.v;
                   return (
                     <button key={opt.v} onClick={() => { setSelectedGroup(p => ({...p, historyVisible: opt.v})); }}
                       className={`flex-1 py-2 text-xs rounded-lg transition ${sel ? 'bg-white/20 text-white' : 'glass-effect text-gray-400 hover:text-white'}`}>

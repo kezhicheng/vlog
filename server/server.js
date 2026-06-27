@@ -148,7 +148,7 @@ try { db.exec('ALTER TABLE shares ADD COLUMN tags TEXT DEFAULT \'[]\''); } catch
 try { db.exec('ALTER TABLE shares ADD COLUMN status TEXT DEFAULT \'normal\''); } catch {}
 try { db.exec('ALTER TABLE shares ADD COLUMN reviewedBy INTEGER'); } catch {}
 try { db.exec('ALTER TABLE shares ADD COLUMN pinnedAt TEXT'); } catch {}
-try { db.exec('ALTER TABLE groups ADD COLUMN historyVisible INTEGER DEFAULT 0'); } catch {}
+try { db.exec("ALTER TABLE groups ADD COLUMN historyVisible INTEGER DEFAULT -1"); } catch {}
 
 // ========== 通知表 ==========
 db.exec(`
@@ -947,11 +947,13 @@ app.post('/api/groups/:id/mute-all', authMiddleware, (req, res) => {
 app.get('/api/groups/:id/messages', authMiddleware, (req, res) => {
   const g = db.prepare('SELECT * FROM groups WHERE id=?').get(req.params.id);
   let msgs = db.prepare('SELECT * FROM group_messages WHERE groupId=? ORDER BY createdAt').all(req.params.id);
-  // 历史可见条数限制：0=仅欢迎消息, 30=最近30条, 其他=全部
+  // 历史可见：-1=全部, 0=仅系统消息, >0=最近N条。但自己的消息永远可见
   if (g && g.historyVisible === 0) {
-    msgs = msgs.filter(m => m.type === 'system');
+    msgs = msgs.filter(m => m.type === 'system' || m.senderId === req.user.id);
   } else if (g && g.historyVisible > 0) {
-    msgs = msgs.slice(-g.historyVisible);
+    const recent = msgs.slice(-g.historyVisible);
+    const ownOlder = msgs.filter(m => m.senderId === req.user.id && !recent.includes(m));
+    msgs = [...recent, ...ownOlder];
   }
   res.json(msgs.map(m => ({ ...m, sender: m.senderId ? userWithoutPassword(db.prepare('SELECT * FROM users WHERE id=?').get(m.senderId)) : null })));
 });
