@@ -678,7 +678,7 @@ const Messages = () => {
                 <div className={`lg:col-span-2 card flex flex-col ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={{ height: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 250px)' }}>
                   {/* 手机端返回按钮 */}
                   {isMobile && showMobileChat && (
-                    <div className="sticky top-0 z-20 bg-[#0f0f1a] pb-2 -mx-4 px-4 pt-2">
+                    <div className="sticky top-0 z-20 glass-effect backdrop-blur-xl pb-2 pt-2 -mt-4 -mx-6 px-6 rounded-t-3xl">
                       <button onClick={handleBack} className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                         <span className="text-sm">返回列表</span>
@@ -687,7 +687,7 @@ const Messages = () => {
                   )}
                   {selectedGroup ? (
                       <>
-                        <div className="border-b border-white/10 pb-3 mb-3 flex-shrink-0 sticky top-0 z-10 bg-[#0f0f1a] -mx-4 px-4 pt-2">
+                        <div className="border-b border-white/10 pb-3 mb-3 flex-shrink-0 sticky top-0 z-10 glass-effect backdrop-blur-xl -mx-6 px-6 pt-2">
                           <div className="flex items-center justify-between">
                             <div>
                               <h3 className="font-semibold text-lg">👥 {selectedGroup.name || '群聊'}</h3>
@@ -767,7 +767,7 @@ const Messages = () => {
                   ) : selectedChat ? (
                       <>
                         {/* 聊天头部 — 固定住 */}
-                        <div className="border-b border-white/10 pb-3 mb-3 flex-shrink-0 sticky top-0 z-10 bg-[#0f0f1a] -mx-4 px-4 pt-2">
+                        <div className="border-b border-white/10 pb-3 mb-3 flex-shrink-0 sticky top-0 z-10 glass-effect backdrop-blur-xl -mx-6 px-6 pt-2">
                           <Link
                               to={`/profile/${selectedChat.user.id}`}
                               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
