@@ -687,7 +687,7 @@ const Messages = () => {
                 </div>
 
                 {/* 聊天窗口 */}
-                <div data-chat-panel className={`lg:col-span-2 card flex flex-col overflow-hidden ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={isMobile && showMobileChat ? { position:'absolute', top:0, left:0, right:0, bottom:0, zIndex:50 } : { height: 'calc(100vh - 250px)' }}>
+                <div data-chat-panel className={`lg:col-span-2 card flex flex-col overflow-hidden ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={isMobile && showMobileChat ? { position:'fixed', top:56, bottom:60, left:0, right:0, zIndex:50, height: (mobileVh - 116) + 'px' } : { height: 'calc(100vh - 250px)' }}>
                   {/* 手机端返回按钮 */}
                   {isMobile && showMobileChat && (
                     <div className="flex-shrink-0 px-2 py-1">
