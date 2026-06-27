@@ -605,7 +605,7 @@ const Messages = () => {
                 <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
               </div>
           ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 250px)' }}>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: isMobile ? 'calc(100dvh - 116px)' : 'calc(100vh - 250px)' }}>
                 {/* 会话/好友列表 */}
                 <div className={`lg:col-span-1 card overflow-y-auto ${showMobileChat ? 'hidden' : ''}`}>
                   {/* 标签切换：好友 / 群聊 */}
@@ -685,7 +685,7 @@ const Messages = () => {
                 </div>
 
                 {/* 聊天窗口 */}
-                <div className={`lg:col-span-2 card flex flex-col ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={{ height: isMobile ? 'calc(100dvh - 110px)' : 'calc(100vh - 250px)' }}>
+                <div className={`lg:col-span-2 card flex flex-col ${isMobile && !showMobileChat ? 'hidden' : ''} ${isMobile && showMobileChat ? 'fixed inset-0 z-50' : ''}`} style={isMobile && showMobileChat ? { top: '56px', bottom: '60px' } : { height: 'calc(100vh - 250px)' }}>
                   {/* 手机端返回按钮 */}
                   {isMobile && showMobileChat && (
                     <div className="sticky top-0 z-20 glass-effect backdrop-blur-xl pb-2 pt-2 -mt-4 -mx-6 px-6 rounded-t-3xl">
