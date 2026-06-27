@@ -935,7 +935,7 @@ app.post('/api/groups/:id/mute-all', authMiddleware, (req, res) => {
 // 获取群消息
 app.get('/api/groups/:id/messages', authMiddleware, (req, res) => {
   const msgs = db.prepare('SELECT * FROM group_messages WHERE groupId=? ORDER BY createdAt').all(req.params.id);
-  res.json(msgs.map(m => ({ ...m, sender: userWithoutPassword(db.prepare('SELECT * FROM users WHERE id=?').get(m.senderId)) })));
+  res.json(msgs.map(m => ({ ...m, sender: m.senderId ? userWithoutPassword(db.prepare('SELECT * FROM users WHERE id=?').get(m.senderId)) : null })));
 });
 
 // ========== 群聊邀请与入群审批 ==========
@@ -957,6 +957,8 @@ app.post('/api/groups/:id/invite', authMiddleware, (req, res) => {
     if (joinType === 'free') {
       // 免审批：直接入群
       members.push(uid);
+      const newUser = db.prepare('SELECT username FROM users WHERE id=?').get(uid);
+      db.prepare("INSERT INTO group_messages (groupId, senderId, content, type, createdAt) VALUES (?, 0, ?, 'system', datetime('now', '+8 hours'))").run(req.params.id, '欢迎 ' + (newUser?.username || '新成员') + ' 加入群聊 🎉');
       results.push({ userId: uid, status: 'joined' });
     } else {
       // 需要审批：创建入群申请
@@ -1021,6 +1023,8 @@ app.post('/api/groups/:id/join-requests/:requestId', authMiddleware, (req, res) 
     if (!members.includes(request.userId)) {
       members.push(request.userId);
       db.prepare('UPDATE groups SET members=? WHERE id=?').run(JSON.stringify(members), req.params.id);
+      const newUser = db.prepare('SELECT username FROM users WHERE id=?').get(request.userId);
+      db.prepare("INSERT INTO group_messages (groupId, senderId, content, type, createdAt) VALUES (?, 0, ?, 'system', datetime('now', '+8 hours'))").run(req.params.id, '欢迎 ' + (newUser?.username || '新成员') + ' 加入群聊 🎉');
     }
   }
   db.prepare('UPDATE group_join_requests SET status=? WHERE id=?').run(action === 'approve' ? 'approved' : 'rejected', req.params.requestId);

@@ -720,6 +720,13 @@ const Messages = () => {
                         </div>
                         <div className="flex-1 overflow-y-auto mb-4 space-y-2">
                           {groupMessages.map(msg => {
+                            if (msg.type === 'system') {
+                              return (
+                                <div key={msg.id} className="flex justify-center my-3">
+                                  <span className="text-xs text-gray-500 bg-white/5 px-3 py-1 rounded-full">{msg.content}</span>
+                                </div>
+                              );
+                            }
                             const isMine = msg.senderId === user.id;
                             return (
                               <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
