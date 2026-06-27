@@ -27,8 +27,9 @@ const MusicPlayer = () => {
   // 禁用时不显示
   if (!musicEnabled) return null;
 
-  // 用上传的音乐，没有则用默认
-  const src = musicUrl || 'https://www.bensound.com/bensound-music/bensound-ukulele.mp3';
+  // 用上传的音乐，没有则不加载
+  if (!musicUrl) return null;
+  const src = musicUrl;
 
   return (
     <div className="fixed bottom-8 right-8 z-40">
