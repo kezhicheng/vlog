@@ -675,7 +675,7 @@ const Messages = () => {
                 </div>
 
                 {/* 聊天窗口 */}
-                <div className={`lg:col-span-2 card flex flex-col ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={{ height: isMobile ? 'calc(100vh - 110px)' : 'calc(100vh - 250px)' }}>
+                <div className={`lg:col-span-2 card flex flex-col ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={{ height: isMobile ? 'calc(100dvh - 110px)' : 'calc(100vh - 250px)' }}>
                   {/* 手机端返回按钮 */}
                   {isMobile && showMobileChat && (
                     <div className="sticky top-0 z-20 glass-effect backdrop-blur-xl pb-2 pt-2 -mt-4 -mx-6 px-6 rounded-t-3xl">
@@ -747,8 +747,8 @@ const Messages = () => {
                           <div ref={messagesEndRef} />
                         </div>
                         <EmojiPicker isOpen={showGroupEmojiPicker} onClose={() => setShowGroupEmojiPicker(false)} onSelect={handleGroupEmojiSelect} />
-                        <form onSubmit={handleSendGroupMessage} className="flex-shrink-0">
-                          <div className="flex items-center gap-1.5 bg-white/5 rounded-2xl p-1.5">
+                        <form onSubmit={handleSendGroupMessage} className="flex-shrink-0 pb-safe">
+                          <div className="flex items-center gap-1.5 bg-white/10 rounded-2xl p-1.5 ring-1 ring-white/10 focus-within:ring-purple-500/50 focus-within:bg-white/[0.07] transition-all">
                             <button type="button" onClick={() => setShowGroupEmojiPicker(!showGroupEmojiPicker)}
                               className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-xl flex-shrink-0">😊</button>
                             <button type="button" onClick={() => fileInputRef.current?.click()}
@@ -825,8 +825,8 @@ const Messages = () => {
                           onClose={() => setShowEmojiPicker(false)}
                           onSelect={handleEmojiSelect}
                         />
-                        <form onSubmit={handleSendMessage} className="flex-shrink-0">
-                          <div className="flex items-center gap-1.5 bg-white/5 rounded-2xl p-1.5">
+                        <form onSubmit={handleSendMessage} className="flex-shrink-0 pb-safe">
+                          <div className="flex items-center gap-1.5 bg-white/10 rounded-2xl p-1.5 ring-1 ring-white/10 focus-within:ring-purple-500/50 focus-within:bg-white/[0.07] transition-all">
                             {/* 左侧：表情 + 文件 */}
                             <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                               className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-xl flex-shrink-0"
