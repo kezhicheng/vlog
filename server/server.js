@@ -432,7 +432,7 @@ const safeParseJSON = (str, fallback) => {
 // 注册
 app.post('/api/auth/register', [
   body('username').trim().isLength({ min: 1, max: 30 }).withMessage('用户名1-30字符'),
-  body('email').trim().isEmail().withMessage('邮箱格式不正确'),
+  body('email').trim().notEmpty().withMessage('请输入邮箱或手机号'),
   body('password').isLength({ min: 6, max: 100 }).withMessage('密码至少6位'),
 ], validate, async (req, res) => {
   // 检查是否允许注册
@@ -441,10 +441,12 @@ app.post('/api/auth/register', [
     return res.status(403).json({ message: '管理员已关闭注册功能' });
   }
   const { username, email, password } = req.body;
+  const isPhone = /^1[3-9]\d{9}$/.test(email);
+  const actualEmail = isPhone ? (email + '@phone.user') : email;
   try {
     const hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-    const result = db.prepare(`INSERT INTO users (username, email, password, avatar, createdAt) VALUES (?, ?, ?, ?, datetime('now', '+8 hours'))`).run(
-      username, email, hash, `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`
+    const result = db.prepare(`INSERT INTO users (username, email, password, phone, avatar, createdAt) VALUES (?, ?, ?, ?, ?, datetime('now', '+8 hours'))`).run(
+      username, actualEmail, hash, isPhone ? email : null, `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`
     );
     const user = db.prepare('SELECT * FROM users WHERE id=?').get(result.lastInsertRowid);
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
