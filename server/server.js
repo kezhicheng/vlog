@@ -461,13 +461,14 @@ app.post('/api/auth/register', [
 
 // 登录
 app.post('/api/auth/login', [
-  body('email').trim().isEmail().withMessage('邮箱格式不正确'),
+  body('email').trim().notEmpty().withMessage('请输入邮箱或手机号'),
   body('password').isLength({ min: 1 }).withMessage('请输入密码'),
 ], validate, (req, res) => {
   const { email, password } = req.body;
-  const user = db.prepare('SELECT * FROM users WHERE email=?').get(email);
-  if (!user) return res.status(401).json({ message: '邮箱或密码错误' });
-  if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ message: '邮箱或密码错误' });
+  const isPhone = /^1[3-9]\d{9}$/.test(email);
+  const user = db.prepare(isPhone ? 'SELECT * FROM users WHERE phone=?' : 'SELECT * FROM users WHERE email=?').get(email);
+  if (!user) return res.status(401).json({ message: '账号或密码错误' });
+  if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ message: '账号或密码错误' });
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
   db.prepare("UPDATE users SET location=? WHERE id=?").run(user.location || '未知', user.id);
   // 记录登录和在线状态

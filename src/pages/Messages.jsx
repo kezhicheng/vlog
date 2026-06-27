@@ -675,7 +675,7 @@ const Messages = () => {
                 </div>
 
                 {/* 聊天窗口 */}
-                <div className={`lg:col-span-2 card flex flex-col ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={{ height: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 250px)' }}>
+                <div className={`lg:col-span-2 card flex flex-col ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={{ height: isMobile ? 'calc(100vh - 110px)' : 'calc(100vh - 250px)' }}>
                   {/* 手机端返回按钮 */}
                   {isMobile && showMobileChat && (
                     <div className="sticky top-0 z-20 glass-effect backdrop-blur-xl pb-2 pt-2 -mt-4 -mx-6 px-6 rounded-t-3xl">

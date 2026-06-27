@@ -69,9 +69,9 @@ const Login = () => {
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">邮箱</label>
-            <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-              className="input-field" placeholder="请输入邮箱" required />
+            <label className="block text-sm font-medium text-gray-300 mb-2">邮箱/手机号</label>
+            <input value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+              className="input-field" placeholder="请输入邮箱或手机号" required />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">密码</label>
