@@ -7,7 +7,10 @@ const EditProfile = ({ isOpen, onClose, onSuccess }) => {
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     username: user?.username || '',
-    bio: user?.bio || ''
+    bio: user?.bio || '',
+    phone: user?.phone || '',
+    oldPassword: '',
+    newPassword: '',
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || '');
@@ -44,10 +47,10 @@ const EditProfile = ({ isOpen, onClose, onSuccess }) => {
       }
 
       // 更新用户名和签名
-      const response = await axios.patch(`/api/users/${user.id}`, {
-        username: formData.username,
-        bio: formData.bio
-      });
+      const payload = { username: formData.username, bio: formData.bio };
+      if (formData.phone && formData.phone !== user.phone) payload.phone = formData.phone;
+      if (formData.newPassword) { payload.oldPassword = formData.oldPassword; payload.newPassword = formData.newPassword; }
+      const response = await axios.patch(`/api/users/${user.id}`, payload);
 
       // 合并更新到本地状态
       const updatedUser = {
@@ -132,9 +135,27 @@ const EditProfile = ({ isOpen, onClose, onSuccess }) => {
             <textarea
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              className="input-field min-h-[100px] resize-none"
+              className="input-field min-h-[60px] resize-none"
               placeholder="介绍一下你自己..."
             />
+          </div>
+
+          {/* 手机号 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">手机号</label>
+            <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
+              className="input-field" placeholder="输入手机号" />
+          </div>
+
+          {/* 修改密码 */}
+          <div className="border-t border-white/10 pt-4">
+            <p className="text-xs text-gray-500 mb-3">修改密码（不填则不修改）</p>
+            <div className="space-y-3">
+              <input type="password" value={formData.oldPassword} onChange={e => setFormData({...formData, oldPassword: e.target.value})}
+                className="input-field" placeholder="当前密码" />
+              <input type="password" value={formData.newPassword} onChange={e => setFormData({...formData, newPassword: e.target.value})}
+                className="input-field" placeholder="新密码（至少6位）" />
+            </div>
           </div>
 
           {/* 按钮 */}

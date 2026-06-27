@@ -522,9 +522,18 @@ app.post('/api/users/:id/avatar', authMiddleware, upload.single('avatar'), (req,
 // 更新用户信息
 app.patch('/api/users/:id', authMiddleware, (req, res) => {
   if (req.user.id != req.params.id) return res.status(403).json({ message: '无权操作' });
-  const { username, bio } = req.body;
+  const { username, bio, phone, oldPassword, newPassword } = req.body;
   if (username) db.prepare('UPDATE users SET username=? WHERE id=?').run(username, req.params.id);
   if (bio !== undefined) db.prepare('UPDATE users SET bio=? WHERE id=?').run(bio, req.params.id);
+  if (phone !== undefined) db.prepare('UPDATE users SET phone=? WHERE id=?').run(phone, req.params.id);
+  // 修改密码（需验证旧密码）
+  if (newPassword && newPassword.length >= 6) {
+    const user = db.prepare('SELECT password FROM users WHERE id=?').get(req.params.id);
+    if (!oldPassword || !bcrypt.compareSync(oldPassword, user.password)) {
+      return res.status(400).json({ message: '旧密码不正确' });
+    }
+    db.prepare('UPDATE users SET password=? WHERE id=?').run(bcrypt.hashSync(newPassword, BCRYPT_ROUNDS), req.params.id);
+  }
   res.json(userWithoutPassword(db.prepare('SELECT * FROM users WHERE id=?').get(req.params.id)));
 });
 
