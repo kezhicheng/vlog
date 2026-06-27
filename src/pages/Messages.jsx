@@ -583,20 +583,22 @@ const Messages = () => {
 
   const showMobileChat = isMobile && (selectedChat || selectedGroup);
 
-  // 手机端键盘弹起时锁定视口
+  // 手机端：使用 visualViewport 监听键盘变化
   useEffect(() => {
     if (!isMobile || !showMobileChat) return;
-    const root = document.getElementById('root');
-    const chatPanel = document.querySelector('[data-chat-panel]');
-    if (!root || !chatPanel) return;
-    const onResize = () => {
-      const vh = window.visualViewport?.height || window.innerHeight;
-      chatPanel.style.height = (vh - 116) + 'px';
+    const panel = document.querySelector('[data-chat-panel]');
+    if (!panel || !window.visualViewport) return;
+    const update = () => {
+      panel.style.height = window.visualViewport.height + 'px';
+      panel.style.top = '0';
     };
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', onResize);
-      return () => window.visualViewport.removeEventListener('resize', onResize);
-    }
+    update();
+    window.visualViewport.addEventListener('resize', update);
+    window.visualViewport.addEventListener('scroll', update);
+    return () => {
+      window.visualViewport.removeEventListener('resize', update);
+      window.visualViewport.removeEventListener('scroll', update);
+    };
   }, [isMobile, showMobileChat]);
 
   return (
@@ -611,7 +613,7 @@ const Messages = () => {
                 <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
               </div>
           ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: isMobile ? 'calc(100dvh - 116px)' : 'calc(100vh - 250px)' }}>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: isMobile ? 'calc(100dvh - 56px)' : 'calc(100vh - 250px)' }}>
                 {/* 会话/好友列表 */}
                 <div className={`lg:col-span-1 card overflow-y-auto ${showMobileChat ? 'hidden' : ''}`}>
                   {/* 标签切换：好友 / 群聊 */}
