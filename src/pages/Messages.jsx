@@ -582,6 +582,17 @@ const Messages = () => {
   };
 
   const showMobileChat = isMobile && (selectedChat || selectedGroup);
+  const [mobileVh, setMobileVh] = useState(window.innerHeight);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => setMobileVh(vv.height);
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update); };
+  }, [isMobile]);
 
 
   return (
@@ -596,7 +607,7 @@ const Messages = () => {
                 <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
               </div>
           ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative" style={{ height: isMobile ? 'calc(100vh - 116px)' : 'calc(100vh - 250px)' }}>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative" style={{ height: isMobile ? (mobileVh - 116) + 'px' : 'calc(100vh - 250px)' }}>
                 {/* 会话/好友列表 */}
                 <div className={`lg:col-span-1 card overflow-y-auto ${showMobileChat ? 'hidden' : ''}`}>
                   {/* 标签切换：好友 / 群聊 */}
@@ -755,7 +766,7 @@ const Messages = () => {
                           <div ref={messagesEndRef} />
                         </div>
                         <EmojiPicker isOpen={showGroupEmojiPicker} onClose={() => setShowGroupEmojiPicker(false)} onSelect={handleGroupEmojiSelect} />
-                        <form onSubmit={handleSendGroupMessage} className="flex-shrink-0 pb-safe">
+                        <form onSubmit={handleSendGroupMessage} className="flex-shrink-0" style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
                           <div className="flex items-center gap-1.5 bg-white/10 rounded-2xl p-1.5 ring-1 ring-transparent">
                             <button type="button" onClick={() => setShowGroupEmojiPicker(!showGroupEmojiPicker)}
                               className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-xl flex-shrink-0">😊</button>
@@ -833,7 +844,7 @@ const Messages = () => {
                           onClose={() => setShowEmojiPicker(false)}
                           onSelect={handleEmojiSelect}
                         />
-                        <form onSubmit={handleSendMessage} className="flex-shrink-0 pb-safe">
+                        <form onSubmit={handleSendMessage} className="flex-shrink-0" style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
                           <div className="flex items-center gap-1.5 bg-white/10 rounded-2xl p-1.5 ring-1 ring-transparent">
                             {/* 左侧：表情 + 文件 */}
                             <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -845,7 +856,7 @@ const Messages = () => {
 
                             {/* 中间：输入框 */}
                             <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)}
-                              className="flex-1 bg-transparent text-sm resize-none outline-none py-2 px-1 min-h-[40px] max-h-[80px] placeholder-gray-500"
+                              className="flex-1 bg-transparent text-base resize-none outline-none py-2 px-1 min-h-[40px] max-h-[80px] placeholder-gray-500"
                               placeholder={canSend ? "输入消息..." : "不能发送"}
                               rows="1"
                               disabled={!canSend || uploadingImage}
