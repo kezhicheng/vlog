@@ -596,7 +596,7 @@ const Messages = () => {
                 <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
               </div>
           ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: isMobile ? 'calc(100vh - 116px)' : 'calc(100vh - 250px)' }}>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative" style={{ height: isMobile ? 'calc(100vh - 116px)' : 'calc(100vh - 250px)' }}>
                 {/* 会话/好友列表 */}
                 <div className={`lg:col-span-1 card overflow-y-auto ${showMobileChat ? 'hidden' : ''}`}>
                   {/* 标签切换：好友 / 群聊 */}
@@ -676,19 +676,19 @@ const Messages = () => {
                 </div>
 
                 {/* 聊天窗口 */}
-                <div data-chat-panel className={`lg:col-span-2 card flex flex-col overflow-hidden ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={isMobile && showMobileChat ? { position:'fixed', top:56, bottom:60, left:0, right:0, zIndex:50 } : { height: 'calc(100vh - 250px)' }}>
+                <div data-chat-panel className={`lg:col-span-2 card flex flex-col overflow-hidden ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={isMobile && showMobileChat ? { position:'absolute', top:0, left:0, right:0, bottom:0, zIndex:50 } : { height: 'calc(100vh - 250px)' }}>
                   {/* 手机端返回按钮 */}
                   {isMobile && showMobileChat && (
-                    <div className="sticky top-0 z-20 glass-effect backdrop-blur-xl pb-2 pt-2 -mt-4 -mx-6 px-6 rounded-t-3xl">
+                    <div className="flex-shrink-0 px-2 py-1">
                       <button onClick={handleBack} className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                        <span className="text-sm">返回列表</span>
+                        <span className="text-sm">返回</span>
                       </button>
                     </div>
                   )}
                   {selectedGroup ? (
                       <>
-                        <div className="border-b border-white/10 pb-3 mb-3 flex-shrink-0 sticky top-0 z-10 glass-effect backdrop-blur-xl -mx-6 px-6 pt-2">
+                        <div className="border-b border-white/10 pb-3 mb-3 flex-shrink-0 sticky top-0 z-10 glass-effect backdrop-blur-xl pt-2 pb-2">
                           <div className="flex items-center justify-between">
                             <div>
                               <h3 className="font-semibold text-lg">👥 {selectedGroup.name || '群聊'}</h3>
@@ -775,7 +775,7 @@ const Messages = () => {
                   ) : selectedChat ? (
                       <>
                         {/* 聊天头部 — 固定住 */}
-                        <div className="border-b border-white/10 pb-3 mb-3 flex-shrink-0 sticky top-0 z-10 glass-effect backdrop-blur-xl -mx-6 px-6 pt-2">
+                        <div className="border-b border-white/10 pb-3 mb-3 flex-shrink-0 sticky top-0 z-10 glass-effect backdrop-blur-xl pt-2 pb-2">
                           <Link
                               to={`/profile/${selectedChat.user.id}`}
                               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
