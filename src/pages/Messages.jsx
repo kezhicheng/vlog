@@ -21,6 +21,8 @@ const Messages = () => {
   const [imageModal, setImageModal] = useState(null);
   const [recording, setRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
+  const [manageMode, setManageMode] = useState(false);
+  const [selectedMsgIds, setSelectedMsgIds] = useState(new Set());
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -499,12 +501,15 @@ const Messages = () => {
 
   const renderMessage = (msg) => {
     const isMine = msg.senderId === user.id;
+    const sel = selectedMsgIds.has(msg.id);
 
     return (
         <div
             key={msg.id}
-            className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-4`}
+            className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-4 ${manageMode ? 'cursor-pointer' : ''}`}
+            onClick={() => toggleMsgSelect(msg.id)}
         >
+          {manageMode && <div className="flex items-center mr-2"><input type="checkbox" checked={sel} readOnly className="w-4 h-4 accent-purple-500" /></div>}
           <div className={`max-w-[70%] ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
             {msg.type === 'voice' ? (
                 <audio controls src={msg.content} className="max-w-[200px] h-8" />
@@ -579,6 +584,22 @@ const Messages = () => {
     setSelectedChat(null);
     setSelectedGroup(null);
     setChatType('friends');
+    setManageMode(false);
+    setSelectedMsgIds(new Set());
+  };
+
+  const toggleMsgSelect = (id) => {
+    if (!manageMode) return;
+    setSelectedMsgIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  };
+
+  const deleteSelectedMsgs = async (isGroup) => {
+    if (!selectedMsgIds.size) return;
+    if (!confirm(`删除 ${selectedMsgIds.size} 条消息？`)) return;
+    const url = isGroup ? '/api/admin/group-messages/' : '/api/admin/messages/';
+    for (const id of selectedMsgIds) await axios.delete(url + id).catch(() => {});
+    setManageMode(false); setSelectedMsgIds(new Set());
+    if (isGroup) fetchGroupMessages(selectedGroup.id); else fetchConversations();
   };
 
   const showMobileChat = isMobile && (selectedChat || selectedGroup);
@@ -711,6 +732,12 @@ const Messages = () => {
                                 <button onClick={() => { setShowGroupManage(true); setGroupAnnouncement(selectedGroup.announcement || ''); setGroupJoinType(selectedGroup.joinType || 'free'); }}
                                   className="px-3 py-1.5 text-xs bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition" title="群管理">⚙管理</button>
                               )}
+                              {user?.role === 'admin' && (
+                                manageMode ? (
+                                  <><button onClick={() => deleteSelectedMsgs(true)} className="px-3 py-1.5 text-xs bg-red-500/20 text-red-400 rounded-lg">{selectedMsgIds.size ? `删(${selectedMsgIds.size})` : '选消息'}</button>
+                                  <button onClick={() => { setManageMode(false); setSelectedMsgIds(new Set()); }} className="px-3 py-1.5 text-xs bg-white/10 rounded-lg">取消</button></>
+                                ) : <button onClick={() => setManageMode(true)} className="px-3 py-1.5 text-xs bg-white/10 text-gray-400 rounded-lg">☰</button>
+                              )}
                             </div>
                           </div>
                           {selectedGroup.muteAll ? (
@@ -721,16 +748,19 @@ const Messages = () => {
                         </div>
                         <div className="flex-1 overflow-y-auto mb-4 space-y-2">
                           {groupMessages.map(msg => {
+                            const gsel = selectedMsgIds.has(msg.id);
                             if (msg.type === 'system') {
                               return (
-                                <div key={msg.id} className="flex justify-center my-3">
+                                <div key={msg.id} className={`flex justify-center my-3 ${manageMode ? 'cursor-pointer' : ''}`} onClick={() => toggleMsgSelect(msg.id)}>
+                                  {manageMode && <input type="checkbox" checked={gsel} readOnly className="w-4 h-4 accent-purple-500 mr-2" />}
                                   <span className="text-xs text-gray-500 bg-white/5 px-3 py-1 rounded-full">{msg.content}</span>
                                 </div>
                               );
                             }
                             const isMine = msg.senderId === user.id;
                             return (
-                              <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                              <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-2 ${manageMode ? 'cursor-pointer' : ''}`} onClick={() => toggleMsgSelect(msg.id)}>
+                                {manageMode && <div className="flex items-center mr-2"><input type="checkbox" checked={gsel} readOnly className="w-4 h-4 accent-purple-500" /></div>}
                                 <div className={`max-w-[70%] px-4 py-2 rounded-2xl ${isMine ? 'bg-purple-500/80 text-white' : 'glass-effect text-gray-200'}`}>
                                   {!isMine && <p className="text-xs text-purple-400 mb-1">{msg.sender?.username || '?'}</p>}
                                   {msg.type === 'voice' ? (
@@ -808,6 +838,14 @@ const Messages = () => {
                               </p>
                             </div>
                           </Link>
+                          {user?.role === 'admin' && (
+                            <div className="flex gap-1 flex-shrink-0">
+                              {manageMode ? (
+                                <><button onClick={() => deleteSelectedMsgs(false)} className="px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded">{selectedMsgIds.size ? `删(${selectedMsgIds.size})` : '选消息'}</button>
+                                <button onClick={() => { setManageMode(false); setSelectedMsgIds(new Set()); }} className="px-2 py-1 text-xs bg-white/10 rounded">取消</button></>
+                              ) : <button onClick={() => setManageMode(true)} className="px-2 py-1 text-xs bg-white/10 text-gray-400 rounded">☰</button>}
+                            </div>
+                          )}
                           {!isFriend && !canSend && (
                               <div className="mt-3 bg-yellow-500/20 border border-yellow-500/50 text-yellow-200 px-4 py-2 rounded-xl text-sm">
                                 ⚠️ 非好友只能发送一条消息，请等待对方添加好友后继续聊天
