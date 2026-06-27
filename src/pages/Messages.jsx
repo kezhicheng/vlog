@@ -582,17 +582,6 @@ const Messages = () => {
   };
 
   const showMobileChat = isMobile && (selectedChat || selectedGroup);
-  const [mobileVh, setMobileVh] = useState(window.innerHeight);
-
-  useEffect(() => {
-    if (!isMobile) return;
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const update = () => setMobileVh(vv.height);
-    vv.addEventListener('resize', update);
-    vv.addEventListener('scroll', update);
-    return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update); };
-  }, [isMobile]);
 
 
   return (
@@ -607,7 +596,7 @@ const Messages = () => {
                 <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
               </div>
           ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative" style={{ height: isMobile ? (mobileVh - 116) + 'px' : 'calc(100vh - 250px)' }}>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative" style={{ height: isMobile ? 'calc(100vh - 116px)' : 'calc(100vh - 250px)' }}>
                 {/* 会话/好友列表 */}
                 <div className={`lg:col-span-1 card overflow-y-auto ${showMobileChat ? 'hidden' : ''}`}>
                   {/* 标签切换：好友 / 群聊 */}
@@ -687,7 +676,7 @@ const Messages = () => {
                 </div>
 
                 {/* 聊天窗口 */}
-                <div data-chat-panel className={`lg:col-span-2 card flex flex-col overflow-hidden ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={isMobile && showMobileChat ? { position:'fixed', top:56, bottom:60, left:0, right:0, zIndex:50, height: (mobileVh - 116) + 'px' } : { height: 'calc(100vh - 250px)' }}>
+                <div data-chat-panel className={`lg:col-span-2 card flex flex-col overflow-hidden ${isMobile && !showMobileChat ? 'hidden' : ''}`} style={isMobile && showMobileChat ? { position:'fixed', top:56, bottom:60, left:0, right:0, zIndex:50 } : { height: 'calc(100vh - 250px)' }}>
                   {/* 手机端返回按钮 */}
                   {isMobile && showMobileChat && (
                     <div className="flex-shrink-0 px-2 py-1">
