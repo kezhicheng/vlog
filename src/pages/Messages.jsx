@@ -583,6 +583,16 @@ const Messages = () => {
 
   const showMobileChat = isMobile && (selectedChat || selectedGroup);
 
+  // 手机端键盘弹起时锁定视口
+  useEffect(() => {
+    if (!isMobile) return;
+    const handleFocus = () => { document.body.style.position = 'fixed'; document.body.style.width = '100%'; };
+    const handleBlur = () => { document.body.style.position = ''; document.body.style.width = ''; };
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(el => { el.addEventListener('focus', handleFocus); el.addEventListener('blur', handleBlur); });
+    return () => inputs.forEach(el => { el.removeEventListener('focus', handleFocus); el.removeEventListener('blur', handleBlur); });
+  }, [isMobile, showMobileChat]);
+
   return (
       <div className="min-h-screen">
         <Navbar />
