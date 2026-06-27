@@ -583,22 +583,18 @@ const Messages = () => {
 
   const showMobileChat = isMobile && (selectedChat || selectedGroup);
 
-  // 手机端：使用 visualViewport 监听键盘变化
+  // 手机端键盘弹起时调整聊天面板高度
   useEffect(() => {
     if (!isMobile || !showMobileChat) return;
     const panel = document.querySelector('[data-chat-panel]');
     if (!panel || !window.visualViewport) return;
     const update = () => {
-      panel.style.height = window.visualViewport.height + 'px';
-      panel.style.top = '0';
+      const vh = window.visualViewport.height;
+      panel.style.height = (vh - 56 - 60) + 'px'; // navbar + mobileNav
     };
     update();
     window.visualViewport.addEventListener('resize', update);
-    window.visualViewport.addEventListener('scroll', update);
-    return () => {
-      window.visualViewport.removeEventListener('resize', update);
-      window.visualViewport.removeEventListener('scroll', update);
-    };
+    return () => window.visualViewport.removeEventListener('resize', update);
   }, [isMobile, showMobileChat]);
 
   return (
