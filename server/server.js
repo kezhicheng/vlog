@@ -1733,16 +1733,6 @@ app.delete('/api/admin/files/:name', authMiddleware, adminMiddleware, (req, res)
   res.json({ success: true });
 });
 
-// ========== 管理员删除消息 ==========
-app.delete('/api/admin/messages/:id', authMiddleware, adminMiddleware, (req, res) => {
-  db.prepare('DELETE FROM messages WHERE id=?').run(req.params.id);
-  res.json({ success: true });
-});
-app.delete('/api/admin/group-messages/:id', authMiddleware, adminMiddleware, (req, res) => {
-  db.prepare('DELETE FROM group_messages WHERE id=?').run(req.params.id);
-  res.json({ success: true });
-});
-
 // ========== 全局错误处理 ==========
 app.use((err, req, res, next) => {
   console.error('Server error:', err.message || err);
