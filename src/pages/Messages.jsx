@@ -948,7 +948,27 @@ const Messages = () => {
                 ))}
               </div>
 
-              <button onClick={handleUpdateGroup} className="btn-primary w-full mb-2">💾 保存设置</button>
+              {/* 新成员可见历史 */}
+              <label className="text-sm text-gray-400 mb-2 block">新成员可见历史</label>
+              <div className="flex gap-2 mb-4">
+                {[{v:0,l:'仅欢迎语'},{v:30,l:'最近30条'},{v:-1,l:'全部'}].map(opt => {
+                  const cur = selectedGroup?.historyVisible ?? 0;
+                  const sel = opt.v === -1 ? (cur !== 0 && cur !== 30) : cur === opt.v;
+                  return (
+                    <button key={opt.v} onClick={() => { setSelectedGroup(p => ({...p, historyVisible: opt.v})); }}
+                      className={`flex-1 py-2 text-xs rounded-lg transition ${sel ? 'bg-white/20 text-white' : 'glass-effect text-gray-400 hover:text-white'}`}>
+                      {opt.l}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button onClick={() => {
+                axios.patch(`/api/groups/${selectedGroup.id}`, { name: selectedGroup.name, announcement: groupAnnouncement, historyVisible: selectedGroup.historyVisible }).then(res => {
+                  if (res.data) setSelectedGroup(prev => ({...prev, ...res.data}));
+                  setShowGroupManage(false); fetchGroups();
+                });
+              }} className="btn-primary w-full mb-2">💾 保存设置</button>
               <button onClick={handleMuteAll} className="btn-secondary w-full">{selectedGroup?.muteAll ? '🔈 关闭全员禁言' : '🔇 开启全员禁言'}</button>
             </div>
           </div>

@@ -148,6 +148,7 @@ try { db.exec('ALTER TABLE shares ADD COLUMN tags TEXT DEFAULT \'[]\''); } catch
 try { db.exec('ALTER TABLE shares ADD COLUMN status TEXT DEFAULT \'normal\''); } catch {}
 try { db.exec('ALTER TABLE shares ADD COLUMN reviewedBy INTEGER'); } catch {}
 try { db.exec('ALTER TABLE shares ADD COLUMN pinnedAt TEXT'); } catch {}
+try { db.exec('ALTER TABLE groups ADD COLUMN historyVisible INTEGER DEFAULT 0'); } catch {}
 
 // ========== 通知表 ==========
 db.exec(`
@@ -923,9 +924,10 @@ app.patch('/api/groups/:id', authMiddleware, (req, res) => {
   const g = db.prepare('SELECT * FROM groups WHERE id=?').get(req.params.id);
   if (!g) return res.status(404).json({ message: '群不存在' });
   if (!isGroupAdmin(g, req.user.id)) return res.status(403).json({ message: '仅群主/管理员可修改' });
-  const { name, announcement, joinType } = req.body;
+  const { name, announcement, joinType, historyVisible } = req.body;
   if (name !== undefined) db.prepare('UPDATE groups SET name=? WHERE id=?').run(name, req.params.id);
   if (announcement !== undefined) db.prepare('UPDATE groups SET announcement=? WHERE id=?').run(announcement, req.params.id);
+  if (historyVisible !== undefined) db.prepare('UPDATE groups SET historyVisible=? WHERE id=?').run(historyVisible, req.params.id);
   if (joinType !== undefined) db.prepare('UPDATE groups SET joinType=? WHERE id=?').run(joinType, req.params.id);
   const updated = db.prepare('SELECT * FROM groups WHERE id=?').get(req.params.id);
   res.json({ ...updated, members: JSON.parse(updated.members || '[]'), admins: safeParseJSON(updated.admins, []) });
@@ -943,7 +945,14 @@ app.post('/api/groups/:id/mute-all', authMiddleware, (req, res) => {
 
 // 获取群消息
 app.get('/api/groups/:id/messages', authMiddleware, (req, res) => {
-  const msgs = db.prepare('SELECT * FROM group_messages WHERE groupId=? ORDER BY createdAt').all(req.params.id);
+  const g = db.prepare('SELECT * FROM groups WHERE id=?').get(req.params.id);
+  let msgs = db.prepare('SELECT * FROM group_messages WHERE groupId=? ORDER BY createdAt').all(req.params.id);
+  // 历史可见条数限制：0=仅欢迎消息, 30=最近30条, 其他=全部
+  if (g && g.historyVisible === 0) {
+    msgs = msgs.filter(m => m.type === 'system');
+  } else if (g && g.historyVisible > 0) {
+    msgs = msgs.slice(-g.historyVisible);
+  }
   res.json(msgs.map(m => ({ ...m, sender: m.senderId ? userWithoutPassword(db.prepare('SELECT * FROM users WHERE id=?').get(m.senderId)) : null })));
 });
 
