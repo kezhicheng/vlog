@@ -762,7 +762,7 @@ const Messages = () => {
                             <button type="button" onClick={() => fileInputRef.current?.click()}
                               className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition text-lg flex-shrink-0">➕</button>
                             <input value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="输入群消息..."
-                              className="flex-1 bg-transparent text-sm outline-none py-2 px-1 min-h-[40px] placeholder-gray-500"
+                              className="flex-1 bg-transparent text-base outline-none py-2 px-1 min-h-[40px] placeholder-gray-500"
                               disabled={selectedGroup?.muteAll && selectedGroup?.createdBy !== user.id} />
                             <button type="submit" disabled={selectedGroup?.muteAll && selectedGroup?.createdBy !== user.id}
                               className="w-10 h-10 flex items-center justify-center rounded-xl bg-purple-500/80 hover:bg-purple-500 transition flex-shrink-0">
