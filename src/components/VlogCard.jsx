@@ -8,6 +8,7 @@ const VlogCard = ({ vlog, onPrivacyChange }) => {
   const navigate = useNavigate();
   const [users, setUsers] = React.useState({});
   const [showVideo, setShowVideo] = useState(false);
+  const [heartAnim, setHeartAnim] = useState(false);
 
   React.useEffect(() => {
     // 获取用户信息
@@ -42,9 +43,11 @@ const VlogCard = ({ vlog, onPrivacyChange }) => {
   return (
     <>
       <div
-        className="card group hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+        className="card group hover:scale-[1.02] transition-transform duration-300 cursor-pointer relative overflow-hidden"
         onClick={() => navigate(`/vlog/${vlog.id}`)}
+        onDoubleClick={() => { setHeartAnim(true); setTimeout(() => setHeartAnim(false), 900); }}
       >
+        {heartAnim && <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-6xl z-20 pointer-events-none animate-heartBurst">❤️</span>}
         {/* 图片轮播或缩略图/视频 */}
         <div className="relative overflow-hidden rounded-xl mb-4">
           {vlog.images && vlog.images.length > 0 ? (

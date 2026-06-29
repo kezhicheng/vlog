@@ -4,9 +4,81 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-black via-gray-900 to-black text-white min-h-screen overflow-x-hidden;
+    @apply text-white min-h-screen;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #050008 0%, #0d0118 25%, #07020f 50%, #0d0118 75%, #050008 100%);
+    background-size: 200% 200%;
+    animation: gradientFlow 18s ease infinite;
+    overflow-x: hidden;
   }
+}
+
+@keyframes gradientFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ===== 背景浮动光斑层 ===== */
+.bg-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  will-change: transform;
+}
+
+.blob-1 {
+  width: 480px; height: 480px;
+  top: -120px; left: -100px;
+  background: radial-gradient(circle, #7c3aed, transparent 70%);
+  animation: blobMove1 22s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 420px; height: 420px;
+  top: 30%; right: -120px;
+  background: radial-gradient(circle, #ec4899, transparent 70%);
+  animation: blobMove2 26s ease-in-out infinite;
+}
+
+.blob-3 {
+  width: 500px; height: 500px;
+  bottom: -150px; left: 20%;
+  background: radial-gradient(circle, #3b82f6, transparent 70%);
+  animation: blobMove3 30s ease-in-out infinite;
+}
+
+@keyframes blobMove1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(120px, 80px) scale(1.15); }
+}
+@keyframes blobMove2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-100px, 60px) scale(0.9); }
+}
+@keyframes blobMove3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(80px, -100px) scale(1.1); }
+}
+
+/* 移动端降低模糊强度和光斑数量,减轻GPU压力 */
+@media (max-width: 768px) {
+  .blob { filter: blur(50px); opacity: 0.35; }
+  .blob-3 { display: none; }
+}
+
+/* 减少动态效果设置 */
+@media (prefers-reduced-motion: reduce) {
+  body { animation: none; }
+  .blob { animation: none; }
 }
 
 @layer components {
@@ -112,5 +184,16 @@
 
 .mobile-nav-item:active {
   transform: scale(0.95);
+}
+
+/* ===== 双击点赞爆心动画 ===== */
+@keyframes heartBurst {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  30% { transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+}
+
+.animate-heartBurst {
+  animation: heartBurst 0.8s ease-out forwards;
 }
 

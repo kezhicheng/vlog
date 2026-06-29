@@ -52,7 +52,12 @@ const AppRoutes = () => {
     const isLogin = location.pathname === '/login';
 
     return (
-        <div className="app-container">
+        <div className="app-container relative z-10">
+            <div className="bg-blobs" aria-hidden="true">
+                <div className="blob blob-1"></div>
+                <div className="blob blob-2"></div>
+                <div className="blob blob-3"></div>
+            </div>
             <div className={`app-content ${isMobile && !isLogin ? 'pb-16' : ''}`}>
                 <Routes>
                     <Route path="/login" element={<Login />} />
