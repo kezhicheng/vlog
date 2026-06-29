@@ -74,7 +74,7 @@ const EditProfile = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="card max-w-md w-full">
+      <div className="card max-w-md w-full max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold gradient-text">编辑个人资料</h2>
           <button
